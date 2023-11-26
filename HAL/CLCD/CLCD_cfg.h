@@ -1,7 +1,7 @@
 #ifndef CLCD_CFG_H
 #define CLCD_CFG_H
 
-
+ 
 /*Configure whether the CLCD RW pin is connected to a DIO pin or directly to the gnd, options:
  * 												1- GND_CONNECTED
  * 												2- DIO_CONNECTED
