@@ -37,4 +37,8 @@
 #define   SINGLE_ENDED_ADC6    6u
 #define   SINGLE_ENDED_ADC7    7u
 
+
+
+#define IDEL   1u
+#define BUSY   2u
 #endif 
