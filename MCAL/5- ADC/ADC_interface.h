@@ -5,8 +5,11 @@
 void ADC_voidInit(void);
 
 
-uint16 ADC_u8GetChannelReading(uint8 Copy_u8Channel);
+uint8 ADC_u8StartConversionSynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Result);
 
+
+/*To operate this function should Enable GLobal Interrupt*/
+uint8 ADC_u8StartConversionAsynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Result,  void (*Copy_pvNotificationFunc)());
 
 /*Analog Channel and Gain Selection (SINGLE_ENDE Bits)Options:-  */
 /*
