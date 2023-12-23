@@ -41,4 +41,16 @@
 
 #define IDEL   1u
 #define BUSY   2u
+
+
+#define SINGLE_MODE  1u
+#define CHAININ_MODE 2u
+
+
+static void voidHandleStartChainConAsynch(void);
+
+static void voidHandleStartSingelConAsynch(void);
+
+
+
 #endif 
