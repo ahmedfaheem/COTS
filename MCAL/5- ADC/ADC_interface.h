@@ -1,15 +1,31 @@
 #ifndef ADC_INTERFACE_H
 #define ADC_INTERFACE_H
 
+typedef struct{
+
+	uint8 ChainSize;
+	uint8 *ChannelsArr;
+	uint16 *ResultsArr;
+	void (*NotificationFunc)();
+
+}ADC_Chain_t;
+
+
 
 void ADC_voidInit(void);
 
 
-uint8 ADC_u8StartConversionSynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Result);
+uint8 ADC_u8StartSingleConversionSynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Result);
 
 
 /*To operate this function should Enable GLobal Interrupt*/
-uint8 ADC_u8StartConversionAsynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Result,  void (*Copy_pvNotificationFunc)());
+uint8 ADC_u8StartSingleConversionAsynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Result,  void (*Copy_pvNotificationFunc)());
+
+
+
+uint8 ADC_u8StartChainConvAsynch(ADC_Chain_t * Copy_puChainConv);
+
+
 
 /*Analog Channel and Gain Selection (SINGLE_ENDE Bits)Options:-  */
 /*
