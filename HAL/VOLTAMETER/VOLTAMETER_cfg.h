@@ -1,0 +1,9 @@
+#ifndef VOLTAMETER_CFG_H
+#define VOLTAMETER_CFG_H
+
+
+#define VOLTAMETER_VREF  5000UL
+
+
+
+#endif 
