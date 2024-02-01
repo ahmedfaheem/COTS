@@ -214,6 +214,7 @@ void CLCD_voidGoToXY(uint8 Copy_u8XPos, uint8 Copy_u8YPos){
 		Local_u8Adress = 0x40 + Copy_u8XPos;
 
 	}
+
 	/* 		Local_u8Adress = 0x40 * Copy_u8YPos  + Copy_u8XPos; */
 
 	/*Set bit 7 for SetDDRAM Address command (on CLCD memory) */
