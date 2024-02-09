@@ -108,7 +108,7 @@ void CLCD_voidInit(void){
 
 #if CLCD_u8BIT_MODE == EIGHT_BIT
 
-
+  /*no need for use because we use 2ms for enable pulse */
 	/* function Set Command: 2 line, font size: 5 x 7 */
 	/*0 0 0 0 1 1 N F X X */
 	CLCD_voidSendCmd(0b00111000);
