@@ -84,7 +84,7 @@ uint8 ADC_u8StartSingleConversionSynch(uint8 Copy_u8Channel, uint16 *Copy_pu16Re
 
 	uint8 Local_u8Err_State = OK;
 
-	uint8 Local_u8Counter = 0u;
+	uint32 Local_u8Counter = 0u;
 	if(Copy_pu16Result != NULL){
 
 		/*check if ADC is IDEL  */
