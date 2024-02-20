@@ -1,0 +1,96 @@
+#ifndef TIMER_REG_H
+#define TIMER_REG_H
+
+
+/*************TIMER0  8bit***************/
+
+/* Generation Mode  Select Mode */
+#define TCCR0   *((volatile uint8*)0x53)
+/* Select Mode */
+#define TCCR0_WGM00   6u
+#define TCCR0_WGM01   3u
+
+/* Compare Match Output Mode to control hardware action*/
+#define TCCR0_COM00   4u
+#define TCCR0_COM01   5u
+
+
+/*  Clock Select */
+#define   TCCR0_CS00  0u
+#define   TCCR0_CS01  1u
+#define   TCCR0_CS02  2u
+
+
+/*Timer/Counter Register for data in timer*/
+
+#define  TCNT0       *((volatile uint8*)0x52)
+
+
+/*Output Compare Register */
+
+#define  OCR0        *((volatile uint8*)0x5C)
+
+
+/*Timer/Counter Interrupt Mask */
+#define   TIMSK         *((volatile uint8*)0x59)
+#define   TIMSK_TOIE0    0u   /*To enable Timer/Counter0 Overflow Interrupt Enable*/
+#define   TIMSK_OCIE0    1u   /*: Timer/Counter0 Output Compare Match Interrupt Enable*/
+#define   TIMSK_TOIE1    2u
+#define   TIMSK_OCIE1B   3u
+#define   TIMSK_OCIE1A   4u
+/*************END OF TIMER0***************/
+
+/*************START OF 16bit TIMER1 ***************/
+
+#define TCCR1A   *((volatile uint8*)0x4F)   /*Timer/Counter1 Control Register A */
+
+/*Compare Output Mode*/
+
+/*FOR  OC1A*/
+#define TCCR1A_COM1A0   6u
+#define TCCR1A_COM1A1   7u
+/* FOR  OC1B*/
+#define TCCR1A_COM1B0   4u
+#define TCCR1A_COM1B1   5u
+
+/*: Waveform Generation Mode On Register TCCR1A*/
+/**/
+#define TCCR1A_WGM10    0u
+#define TCCR1A_WGM11    1u
+
+/*Timer/Counter1 Control Register B*/
+#define TCCR1B   *((volatile uint8*)0x4E)
+
+/*Waveform Generation Mode On Register TCCR1B*/
+#define  TCCR1B_WGM13    4u
+#define  TCCR1B_WGM12    3u
+
+/*Timer/Counter1  data register*/
+#define TCNT1H   *((volatile uint8*)0x4D)
+#define TCNT1L   *((volatile uint8*)0x4C)
+
+#define TCNT1   *((volatile uint16*)0x4C)  /* Refer to 16 bit TCNT1H:TCNT1L */
+
+/*Output Compare Register 1 A */
+#define OCR1AH   *((volatile uint8*)0x4B)
+#define OCR1AL   *((volatile uint8*)0x4A)
+
+#define OCR1A   *((volatile uint16*)0x4A) /* Refer to 16 bit OCR1AH:OCR1AL */
+
+
+/*Output Compare Register 1 B */
+#define OCR1BH   *((volatile uint8*)0x49)
+#define OCR1BL   *((volatile uint8*)0x48)
+
+#define OCR1B   *((volatile uint16*)0x48) /* Refer to 16 bit OCR1BH:OCR1BL */
+
+
+/*Input Capture Register 1*/
+#define ICR1   *((volatile uint16*)0x46)  /* used for defining the counter TOP value*/
+
+
+
+
+
+
+#endif
