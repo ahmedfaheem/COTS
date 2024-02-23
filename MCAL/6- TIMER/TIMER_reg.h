@@ -38,6 +38,7 @@
 #define   TIMSK_TOIE1    2u
 #define   TIMSK_OCIE1B   3u
 #define   TIMSK_OCIE1A   4u
+#define   TIMSK_TICIE1   5u
 /*************END OF TIMER0***************/
 
 /*************START OF 16bit TIMER1 ***************/
@@ -64,6 +65,15 @@
 /*Waveform Generation Mode On Register TCCR1B*/
 #define  TCCR1B_WGM13    4u
 #define  TCCR1B_WGM12    3u
+
+/*ICU Trigger State*/
+
+#define  TCCR1B_ICES1    6u
+
+/*ICU Noise Canceler State*/
+
+#define  TCCR1B_ICNC1    7u
+
 
 /*Timer/Counter1  data register*/
 #define TCNT1H   *((volatile uint8*)0x4D)
