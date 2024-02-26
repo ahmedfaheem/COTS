@@ -225,7 +225,7 @@ uint16 TIMER1_voidReadTimerVal(){
 	return TCNT1;
 }
 
-uint8 TIMER1_voidSetCompareValue(TIMER1_OUT_PIN Copy_OutPin,uint16 Copy_u16CompareVal){
+uint8 TIMER1_u8SetCompareValue(TIMER1_OUT_PIN Copy_OutPin,uint16 Copy_u16CompareVal){
 	uint8 Local_u8ErrState = OK;
 
 	switch(Copy_OutPin){
@@ -237,7 +237,7 @@ uint8 TIMER1_voidSetCompareValue(TIMER1_OUT_PIN Copy_OutPin,uint16 Copy_u16Compa
 
 }
 
-uint8 TIMER1_voidSetTopValue(TIMER1_Top_Opt Copy_u8TopOpt, uint16 Copy_u16TopValue){
+uint8 TIMER1_u8SetTopValue(TIMER1_Top_Opt Copy_u8TopOpt, uint16 Copy_u16TopValue){
 	uint8 Local_u8ErrState = OK;
 
 	switch(Copy_u8TopOpt){
