@@ -39,6 +39,8 @@
 #define   TIMSK_OCIE1B   3u
 #define   TIMSK_OCIE1A   4u
 #define   TIMSK_TICIE1   5u
+#define   TIMSK_OCIE2    7u
+#define   TIMSK_TOIE2    6u
 /*************END OF TIMER0***************/
 
 /*************START OF 16bit TIMER1 ***************/
@@ -97,6 +99,55 @@
 
 /*Input Capture Register 1*/
 #define ICR1   *((volatile uint16*)0x46)  /* used for defining the counter TOP value*/
+
+
+
+/*************START OF 8bit TIMER2 ***************/
+
+
+#define TCCR2   *((volatile uint8*)0x45)   /*Timer/Counter2 Control Register – */
+
+/*Waveform Generation Mode Bit*/
+
+#define TCCR2_WGM20    6u
+#define TCCR2_WGM21    3u
+
+
+/* Compare Match Output Mode For Non PWM and Fast PWM and Phase Correct*/
+
+#define TCCR2_COM20   4u
+#define TCCR2_COM21   5u
+
+/*Timer/Counter Data Register */
+
+#define TCNT2   *((volatile uint8*)0x44)
+
+
+/*Output Compare Register*/
+
+#define OCR2   *((volatile uint8*)0x43)
+
+
+/*Asynchronous Operation of the Timer/Counter Register*/
+
+#define ASSR   *((volatile uint8*)0x42)
+
+
+#define ASSR_AS2    3u       /* set Asynchronous Timer/Counter2*/
+
+#define ASSR_TCN2UB   2u
+#define ASSR_OCR2UB   1u
+#define ASSR_TCR2UB   0u
+
+
+
+
+/*Timer/Counter Interrupt Flag Register*/
+
+#define TIFR   *((volatile uint8*)0x58)
+
+#define TIFR_OCF2   7u
+#define TIFR_TOV2   6u
 
 
 

@@ -6,12 +6,12 @@
 #include "TIMER_cfg.h"
 #include "TIMER_prv.h"
 
-/*Timer0 overflow and comppare match   -> 2
- *  Timer1 over flow and compare match ->  3
- *  timer2  need 4 call back func
+/*  Timer0 ISR  -> 2
+ *  Timer1 ISR  -> 4
+ *  Timer2 ISR  -> 2
  */
 
-static void(*GlobalCallBackFucn[9])(void) = {NULL};
+static void(*GlobalCallBackFucn[8])(void) = {NULL};
 
 uint8 TIMER0_u8Init(const TIMER0_cfg_t  *Copy_suCfg){
 
@@ -50,14 +50,14 @@ uint8 TIMER0_u8Init(const TIMER0_cfg_t  *Copy_suCfg){
 		default: Local_u8ErrState= NOK;
 		}
 
+		/*Set Prescaler */
+		TCCR0 &= MASK_LEAST_3_BIT;
+		TCCR0 |= (Copy_suCfg->Prescaler);
 
 	}else{
 		Local_u8ErrState = NULL_PTR_ERR;
 	}
 
-	/*Set Prescaler */
-	TCCR0 &= MASK_LEAST_3_BIT;
-	TCCR0 |= (Copy_suCfg->Prescaler);
 
 
 	return Local_u8ErrState;
@@ -204,18 +204,18 @@ uint8 TIMER1_u8Init(const TIMER1_cfg_t  *Copy_suCfg){
 		}
 
 
+		/* Set Prescaler */
+
+		TCCR1B &= MASK_LEAST_3_BIT;
+		TCCR1B |= (Copy_suCfg->Prescaler);
+
 
 	}else{
 		Local_u8ErrState = NULL_PTR_ERR;
 	}
 
 
-
-	/* Set Prescaler */
-
-	TCCR1B &= MASK_LEAST_3_BIT;
-	TCCR1B |= (Copy_suCfg->Prescaler);
-
+	return Local_u8ErrState;
 
 }
 
@@ -311,6 +311,138 @@ uint8 TIMER1_u8Set_ICU_Edge_Trigger(TIMER1_ICU_Edge_Opt  Copy_u8ICU_Trigger_Opt)
 
 	return Local_u8ErrState;
 }
+
+
+/*******************Timer2********************/
+
+uint8 TIMER2_u8Init(const TIMER2_cfg_t  *Copy_suCfg){
+	uint8 Local_u8ErrState = OK;
+
+	if(Copy_suCfg != NULL){
+
+		/*Step 1: Disable the Timer/Counter2 interrupts*/
+		CLR_BIT(TIMSK, TIMSK_TOIE2);
+		CLR_BIT(TIMSK, TIMSK_OCIE2);
+
+
+		/*Step 2: Set Clock Source */
+		switch(Copy_suCfg->Clock_opt){
+		case T2_IO_CLOCK: CLR_BIT(ASSR, ASSR_AS2); break;
+		case T2_EXTERNAL_CLOCK:SET_BIT(ASSR, ASSR_AS2); break;
+		default:  Local_u8ErrState= NOK;
+		}
+
+
+		/* Step 3: Write new values to  TCCR2*/
+
+		/* Select Mode */
+		switch(Copy_suCfg->WFG_Mode){
+		case T2_NORMAL:CLR_BIT(TCCR2, TCCR2_WGM21);CLR_BIT(TCCR2, TCCR2_WGM20);break;
+		case T2_COMPARE_MATCH:CLR_BIT(TCCR2, TCCR2_WGM21);SET_BIT(TCCR2, TCCR2_WGM20); break;
+		case T2_FAST_PWM:SET_BIT(TCCR2, TCCR2_WGM21);SET_BIT(TCCR2, TCCR2_WGM20); break;
+		case T2_PHASE_CORRECT_PWM:SET_BIT(TCCR2, TCCR2_WGM21);CLR_BIT(TCCR2, TCCR2_WGM20); break;
+		default: Local_u8ErrState = NOK;
+		}
+
+
+		/* Select Hardware action on Pin OC2*/
+
+		switch(Copy_suCfg->Out_HW_Opt){
+		case T2_OC2_DISCONNECT:	CLR_BIT(TCCR2, TCCR2_COM20);CLR_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_NON_PWM_TOGGEL:	SET_BIT(TCCR2, TCCR2_COM20);CLR_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_NON_PWM_CLEAR:CLR_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_NON_PWM_SET:SET_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_FAST_PWM_CLRON_COM_SETON_TOP:CLR_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_FAST_PWM_SETON_COM_CLRON_TOP:SET_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_PHASE_CORRECT_PWM_CLRON_UPCOUNTCOM_SETON_DOWNCOUNTCOM:CLR_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+		case T2_OC2_PHASE_CORRECT_PWM_SETON_UPCOUNTCOM_CLRON_DOWNCOUNTCOM:SET_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+		default: Local_u8ErrState= NOK;
+		}
+
+
+		/*Set Prescaler */
+		TCCR2 &= MASK_LEAST_3_BIT;
+		TCCR2 |= (Copy_suCfg->Prescaler);
+
+
+		/* Step 4: Wait for registers to update*/
+
+		/* if Result is zero out form loop */
+		while (ASSR & ((1 << ASSR_TCN2UB) | (1 << ASSR_OCR2UB) | (1 << ASSR_TCR2UB)));
+
+	 /*  while((GET_BIT(ASSR,ASSR_TCN2UB) == 0) && (GET_BIT(ASSR,ASSR_OCR2UB) == 0) (GET_BIT(ASSR,ASSR_TCR2UB) == 0));*/
+
+
+		/* Step 5: Clear Timer/Counter2 Interrupt Flags */
+        SET_BIT(TIFR, TIFR_OCF2);
+        SET_BIT(TIFR, TIFR_TOV2);
+
+
+		/* Step 6: Set Interrupt Mode*/
+		switch(Copy_suCfg->INT_State){
+		case T2_INT_OVERFLOW:SET_BIT(TIMSK, TIMSK_TOIE2); break;
+		case T2_INT_COMPARE: SET_BIT(TIMSK, TIMSK_OCIE2); break;
+		case T2_INT_DISABLED:CLR_BIT(TIMSK, TIMSK_TOIE2); CLR_BIT(TIMSK, TIMSK_OCIE2);break;
+		default:Local_u8ErrState = NOK;
+		}
+
+	}else{
+		Local_u8ErrState = NULL_PTR_ERR;
+	}
+
+
+
+	return Local_u8ErrState;
+}
+
+
+
+
+
+void TIMER2_voidSetPreloadValue(uint8 Copy_u8PreloadVal){
+
+	TCNT2 = Copy_u8PreloadVal;
+}
+void TIMER2_voidSetCompareValue(uint8 Copy_u8CompareVal){
+
+	OCR2 = Copy_u8CompareVal;
+}
+void TIMER2_voidSetPrescaler(TIMER2_Prescaler_t  Copy_PrescalerVal){
+	TCCR2 &= MASK_LEAST_3_BIT;
+	TCCR2 |= (Copy_PrescalerVal);
+}
+
+
+uint8 TIMER2_u8SetCompareOutputMode(TIMER2_OUT_HW_Option Copy_u8OutputMode){
+	uint8 Local_u8ErrState = OK;
+
+	switch(Copy_u8OutputMode){
+	case T2_OC2_DISCONNECT:	CLR_BIT(TCCR2, TCCR2_COM20);CLR_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_NON_PWM_TOGGEL:	SET_BIT(TCCR2, TCCR2_COM20);CLR_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_NON_PWM_CLEAR:CLR_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_NON_PWM_SET:SET_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_FAST_PWM_CLRON_COM_SETON_TOP:CLR_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_FAST_PWM_SETON_COM_CLRON_TOP:SET_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_PHASE_CORRECT_PWM_CLRON_UPCOUNTCOM_SETON_DOWNCOUNTCOM:CLR_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+	case T2_OC2_PHASE_CORRECT_PWM_SETON_UPCOUNTCOM_CLRON_DOWNCOUNTCOM:SET_BIT(TCCR2, TCCR2_COM20);SET_BIT(TCCR2, TCCR2_COM21);break;
+	default: Local_u8ErrState= NOK;
+	}
+
+	return Local_u8ErrState;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Timer 0  Overflow ISR */
 
 __attribute__((signal))  void __vector_11(void);
@@ -371,3 +503,30 @@ void __vector_6(void){
 	}
 }
 
+
+
+
+/* Timer 2 Overflow ISR */
+
+__attribute__((signal))  void __vector_5(void);
+
+void __vector_5(void){
+
+	if(GlobalCallBackFucn[TIMER2_OV_INT] != NULL){
+		GlobalCallBackFucn[TIMER2_OV_INT]();
+	}
+
+}
+
+
+/* Timer 2  Out Compare match ISR */
+
+__attribute__((signal))  void __vector_4(void);
+
+void __vector_4(void){
+
+	if(GlobalCallBackFucn[TIMER2_OC_INT] != NULL){
+		GlobalCallBackFucn[TIMER2_OC_INT]();
+	}
+
+}

@@ -10,6 +10,8 @@ enum{
 	TIMER1_OC1A_INT,
 	TIMER1_OC1B_INT,
 	TIMER1_ICU_INT,
+	TIMER2_OV_INT,
+	TIMER2_OC_INT,
 
 }typedef TIMER_IntSource_t;
 
@@ -148,13 +150,81 @@ struct{
 
 }typedef TIMER1_cfg_t;
 
-/***********************************************/
+/******************** Timer/Counter 2 *************************/
 
+enum{
+	TIMER2_NO_CLOCK,
+	TIMER2_NO_PRESCALER,
+	TIMER2_PRESCALER_DIVISION_8,
+	TIMER2_PRESCALER_DIVISION_32,
+	TIMER2_PRESCALER_DIVISION_64,
+	TIMER2_PRESCALER_DIVISION_128,
+	TIMER2_PRESCALER_DIVISION_256,
+	TIMER2_PRESCALER_DIVISION_1024,
+
+}typedef TIMER2_Prescaler_t;
+
+
+
+
+enum{
+	T2_NORMAL,
+	T2_COMPARE_MATCH,
+	T2_FAST_PWM,
+	T2_PHASE_CORRECT_PWM,
+
+}typedef TIMER2_WFG_Mode_t;
+
+enum{
+	T2_INT_OVERFLOW,
+	T2_INT_COMPARE,
+	T2_INT_DISABLED
+}typedef TIMER2_INT_State;
+
+enum{
+	T2_OC2_DISCONNECT,
+	T2_OC2_NON_PWM_TOGGEL,
+	T2_OC2_NON_PWM_CLEAR,
+	T2_OC2_NON_PWM_SET,
+	T2_OC2_FAST_PWM_CLRON_COM_SETON_TOP,
+	T2_OC2_FAST_PWM_SETON_COM_CLRON_TOP,
+	T2_OC2_PHASE_CORRECT_PWM_CLRON_UPCOUNTCOM_SETON_DOWNCOUNTCOM,
+	T2_OC2_PHASE_CORRECT_PWM_SETON_UPCOUNTCOM_CLRON_DOWNCOUNTCOM
+}typedef TIMER2_OUT_HW_Option;
+
+enum{
+	T2_IO_CLOCK,
+	T2_EXTERNAL_CLOCK,
+}typedef TIMER2_Clock_Source;
+
+struct{
+
+	TIMER2_WFG_Mode_t  WFG_Mode;
+	TIMER2_Clock_Source   Clock_opt;
+	TIMER2_Prescaler_t  Prescaler;
+	TIMER2_OUT_HW_Option   Out_HW_Opt;
+	TIMER2_INT_State    INT_State;
+
+}typedef TIMER2_cfg_t;
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************/
 uint8 TIMER0_u8Init(const TIMER0_cfg_t  *Copy_suCfg);
 uint8 TIMER1_u8Init(const TIMER1_cfg_t  *Copy_suCfg);
-
-
+uint8 TIMER2_u8Init(const TIMER2_cfg_t  *Copy_suCfg);
 uint8 TIMER_u8SetCallBackFunc(uint8 Copy_u8IntSource,void(*Copy_pvCallBackFucn)(void));
+
+
 void TIMER0_voidSetPreloadValue(uint8 Copy_u8PreloadVal);
 void TIMER0_voidSetCompareValue(uint8 Copy_u8CompareVal);
 void TIMER0_voidSetPrescaler(TIMER_Prescaler_t  Copy_PrescalerVal);
@@ -170,5 +240,15 @@ void TIMER1_voidSetPrescaler(TIMER_Prescaler_t  Copy_PrescalerVal);
 uint8 TIMER1_u8Set_OC1A_OutPinState(TIMER1_OC1A_OutPin_State Copy_u8OC1A_Opt);
 uint8 TIMER1_u8Set_OC1B_OutPinState(TIMER1_OC1B_OutPin_State Copy_u8OC1B_Opt);
 uint8 TIMER1_u8Set_ICU_Edge_Trigger(TIMER1_ICU_Edge_Opt  Copy_u8ICU_Trigger_Opt);
+
+
+/*Timer/Counter 2*/
+
+void TIMER2_voidSetPreloadValue(uint8 Copy_u8PreloadVal);
+void TIMER2_voidSetCompareValue(uint8 Copy_u8CompareVal);
+void TIMER2_voidSetPrescaler(TIMER2_Prescaler_t  Copy_PrescalerVal);
+uint8 TIMER2_u8SetCompareOutputMode(TIMER2_OUT_HW_Option Copy_u8OutputMode);
+
+
 
 #endif
