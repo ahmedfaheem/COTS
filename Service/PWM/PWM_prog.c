@@ -4,13 +4,15 @@
 #include "PWM_cfg.h"
 #include "PWM_prv.h"
 #include "TIMER_interface.h"
+#include "CLCD_interface.h"
 
-
-static void ICU_Helper();
-static void voidOverFlowCounter();
 static uint32 *PWM_pu32Period = NULL;
 static uint32 *PWM_pu32OnTime = NULL;
 static uint16 PWM_OverflowCounter = 0;
+static void (*Schedule_vCallBackFunc)(void) = NULL;
+static sint8 Schedule_u8PeriodcorOnce  = 0;
+static uint32 Schedule_u32CountCompare  =0;
+
 uint8 PWM_u8Set(uint16 Copy_u16Period_ms,uint16 Copy_u16ONTime_ms){
 	uint8 Local_u8ErrState = OK;
 
@@ -81,6 +83,32 @@ uint8 PWM_u8Get(uint32 *Copy_pu32Period_us, uint32 *Copy_pu32ONTime_us){
 
 
 
+uint8 Schedule_u8Ms(uint32 Copy_u32TimeMs, uint8 Copy_u8PeriodcorOnce,  void (*const Copy_vCallBackFunc)(void) ){
+
+	uint8 Local_u8ErrState = OK;
+
+	if(Copy_vCallBackFunc != NULL){
+		TIMER0_cfg_t  Local_sTimer0_cfg = {
+				.WFG_Mode = T0_COMPARE_MATCH,
+				.Prescaler = TIMER_PRESCALER_DIVISION_256,
+				.Out_HW_Opt = T0_OC0_DISCONNECT,
+				.INT_State =  T0_INT_COMPARE,
+		};
+
+		TIMER0_u8Init(&Local_sTimer0_cfg);
+
+		TIMER0_voidSetCompareValue(250);
+		Schedule_vCallBackFunc = Copy_vCallBackFunc;
+		TIMER_u8SetCallBackFunc(TIMER0_OC_INT,vSchedule);
+	    Schedule_u8PeriodcorOnce = Copy_u8PeriodcorOnce;
+		/* Tick time 16us  and compare val 250*/
+		Schedule_u32CountCompare = (Copy_u32TimeMs /4UL);
+	}else{
+		Local_u8ErrState = NULL_PTR_ERR;
+	}
+	return Local_u8ErrState;
+}
+
 static void ICU_Helper(){
 
 	volatile static uint8 Counter = 0;
@@ -105,7 +133,7 @@ static void ICU_Helper(){
 		*PWM_pu32OnTime = OnTime_Reading  - Period_Reading_2;
 		*PWM_pu32Period = ((*PWM_pu32Period) *  (uint32)PWM_TickTime);
 		*PWM_pu32OnTime = ((*PWM_pu32OnTime) *  (uint32)PWM_TickTime);
-		 TIMER1_vStopTimer();
+		TIMER1_vStopTimer();
 		TIMER1_u8DisableInt(T1_INT_DISABLED);
 		PWM_OverflowCounter = 0;
 		Counter = 0;
@@ -119,4 +147,24 @@ static void voidOverFlowCounter(){
 	PWM_OverflowCounter++;
 
 }
+
+
+static void vSchedule(){
+
+	static uint32 Counter = 0;
+
+	if(Schedule_u8PeriodcorOnce > 0){
+		Counter++;
+		if(Counter == Schedule_u32CountCompare){
+			Schedule_vCallBackFunc();
+			CLCD_u8SendNumber(Schedule_u8PeriodcorOnce);
+			Counter = 0;
+			Schedule_u8PeriodcorOnce--;
+		}
+	}else{
+		TIMER0_vStopTimer();
+	}
+}
+
+
 
