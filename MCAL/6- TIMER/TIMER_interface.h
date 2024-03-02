@@ -229,18 +229,24 @@ void TIMER0_voidSetPreloadValue(uint8 Copy_u8PreloadVal);
 void TIMER0_voidSetCompareValue(uint8 Copy_u8CompareVal);
 void TIMER0_voidSetPrescaler(TIMER_Prescaler_t  Copy_PrescalerVal);
 uint8 TIMER0_u8SetCompareOutputMode(TIMER0_OUT_HW_Option Copy_u8OutputMode);
+uint8  TIMER0_u8EnableInt(TIMER0_INT_State Copy_sIntOpt);
+uint8  TIMER0_u8DisableInt(TIMER0_INT_State Copy_sIntOpt);
+void  TIMER0_vStopTimer();
 
 
 /*Out Pin TIMER1_OC1A,  TIMER1_OC1B*/
 uint8 TIMER1_u8SetCompareValue(TIMER1_OUT_PIN Copy_OutPin,uint16 Copy_u16CompareVal);
 uint8 TIMER1_u8SetTopValue(TIMER1_Top_Opt Copy_u8TopOpt, uint16 Copy_u16TopValue);
 void TIMER1_voidSetTimerValue(uint16 Copy_u8TimerVal);
-uint16 TIMER1_voidReadTimerVal(void);
+uint16 TIMER1_u16ReadTimerVal(void);
 void TIMER1_voidSetPrescaler(TIMER_Prescaler_t  Copy_PrescalerVal);
 uint8 TIMER1_u8Set_OC1A_OutPinState(TIMER1_OC1A_OutPin_State Copy_u8OC1A_Opt);
 uint8 TIMER1_u8Set_OC1B_OutPinState(TIMER1_OC1B_OutPin_State Copy_u8OC1B_Opt);
 uint8 TIMER1_u8Set_ICU_Edge_Trigger(TIMER1_ICU_Edge_Opt  Copy_u8ICU_Trigger_Opt);
-
+uint16 TIMER1_u16ReadTimerTopICR1(void);
+uint8  TIMER1_u8EnableInt(TIMER1_INT_State Copy_sIntOpt);
+uint8  TIMER1_u8DisableInt(TIMER1_INT_State Copy_sIntOpt);
+void  TIMER1_vStopTimer();
 
 /*Timer/Counter 2*/
 
@@ -248,6 +254,9 @@ void TIMER2_voidSetPreloadValue(uint8 Copy_u8PreloadVal);
 void TIMER2_voidSetCompareValue(uint8 Copy_u8CompareVal);
 void TIMER2_voidSetPrescaler(TIMER2_Prescaler_t  Copy_PrescalerVal);
 uint8 TIMER2_u8SetCompareOutputMode(TIMER2_OUT_HW_Option Copy_u8OutputMode);
+uint8  TIMER2_u8EnableInt(TIMER2_INT_State Copy_sIntOpt);
+uint8  TIMER2_u8DisableInt(TIMER2_INT_State Copy_sIntOpt);
+void  TIMER2_vStopTimer();
 
 
 

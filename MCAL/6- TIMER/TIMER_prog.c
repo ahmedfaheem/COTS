@@ -117,6 +117,38 @@ uint8 TIMER0_u8SetCompareOutputMode(TIMER0_OUT_HW_Option Copy_u8OutputMode){
 	return Local_u8ErrState;
 }
 
+
+uint8  TIMER0_u8EnableInt(TIMER0_INT_State Copy_sIntOpt){
+	uint8 Local_u8ErrState = OK;
+
+	switch(Copy_sIntOpt){
+	case T0_INT_OVERFLOW:SET_BIT(TIMSK, TIMSK_TOIE0); break;
+	case T0_INT_COMPARE: SET_BIT(TIMSK, TIMSK_OCIE0); break;
+	default:Local_u8ErrState = NOK;
+	}
+
+	return Local_u8ErrState;
+
+}
+uint8  TIMER0_u8DisableInt(TIMER0_INT_State Copy_sIntOpt){
+	uint8 Local_u8ErrState = OK;
+	switch(Copy_sIntOpt){
+	case T0_INT_OVERFLOW:CLR_BIT(TIMSK, TIMSK_TOIE0); break;
+	case T0_INT_COMPARE: CLR_BIT(TIMSK, TIMSK_OCIE0); break;
+	case T0_INT_DISABLED:CLR_BIT(TIMSK, TIMSK_TOIE0); CLR_BIT(TIMSK, TIMSK_OCIE0);break;
+	default:Local_u8ErrState = NOK;
+	}
+	return Local_u8ErrState;
+
+}
+
+void  TIMER0_vStopTimer(){
+	TCCR0 &= MASK_LEAST_3_BIT;
+	TCCR0 |= TIMER_NO_PRESCALER;
+	/*Disable All interrupts */
+	CLR_BIT(TIMSK, TIMSK_TOIE0); CLR_BIT(TIMSK, TIMSK_OCIE0);
+}
+
 /* TIMER1*/
 
 uint8 TIMER1_u8Init(const TIMER1_cfg_t  *Copy_suCfg){
@@ -203,7 +235,6 @@ uint8 TIMER1_u8Init(const TIMER1_cfg_t  *Copy_suCfg){
 		default: Local_u8ErrState = NOK;
 		}
 
-
 		/* Set Prescaler */
 
 		TCCR1B &= MASK_LEAST_3_BIT;
@@ -223,7 +254,7 @@ void TIMER1_voidSetTimerValue(uint16 Copy_u8TimerVal){
 	TCNT1 =Copy_u8TimerVal;
 }
 
-uint16 TIMER1_voidReadTimerVal(){
+uint16 TIMER1_u16ReadTimerVal(){
 	return TCNT1;
 }
 
@@ -313,6 +344,56 @@ uint8 TIMER1_u8Set_ICU_Edge_Trigger(TIMER1_ICU_Edge_Opt  Copy_u8ICU_Trigger_Opt)
 }
 
 
+uint16 TIMER1_u16ReadTimerTopICR1(void){
+	return ICR1;
+}
+
+uint8  TIMER1_u8EnableInt(TIMER1_INT_State Copy_sIntOpt){
+	uint8 Local_u8ErrState = OK;
+
+	/* Enable Interrupt State */
+	switch(Copy_sIntOpt){
+	case T1_INT_ICU: SET_BIT(TIMSK, TIMSK_TICIE1);break;
+	case T1_INT_COMPARE_OCIE1A:SET_BIT(TIMSK,TIMSK_OCIE1A); break;
+	case T1_INT_COMPARE_OCIE1B:SET_BIT(TIMSK,TIMSK_OCIE1B); break;
+	case T1_INT_COMPARE_OCIE1A_B:SET_BIT(TIMSK,TIMSK_OCIE1A);SET_BIT(TIMSK,TIMSK_OCIE1B); break;
+	case T1_INT_OVERFLOW:SET_BIT(TIMSK,TIMSK_TOIE1); break;
+	default: Local_u8ErrState = NOK;
+	}
+
+	return Local_u8ErrState;
+
+}
+uint8  TIMER1_u8DisableInt(TIMER1_INT_State Copy_sIntOpt){
+	uint8 Local_u8ErrState = OK;
+
+	/* Disable Interrupt State */
+	switch(Copy_sIntOpt){
+	case T1_INT_ICU: CLR_BIT(TIMSK, TIMSK_TICIE1);break;
+	case T1_INT_COMPARE_OCIE1A:CLR_BIT(TIMSK,TIMSK_OCIE1A); break;
+	case T1_INT_COMPARE_OCIE1B:CLR_BIT(TIMSK,TIMSK_OCIE1B); break;
+	case T1_INT_COMPARE_OCIE1A_B:CLR_BIT(TIMSK,TIMSK_OCIE1A);CLR_BIT(TIMSK,TIMSK_OCIE1B); break;
+	case T1_INT_OVERFLOW:CLR_BIT(TIMSK,TIMSK_TOIE1); break;
+	case T1_INT_DISABLED:CLR_BIT(TIMSK, TIMSK_TICIE1);CLR_BIT(TIMSK,TIMSK_OCIE1A);CLR_BIT(TIMSK,TIMSK_OCIE1B);CLR_BIT(TIMSK,TIMSK_TOIE1); break;
+	default: Local_u8ErrState = NOK;
+	}
+	return Local_u8ErrState;
+
+}
+
+void  TIMER1_vStopTimer(){
+	TCCR1B &= MASK_LEAST_3_BIT;
+	TCCR1B |= TIMER_NO_CLOCK;
+
+	/*Disable All interrupts */
+	CLR_BIT(TIMSK, TIMSK_TICIE1);
+	CLR_BIT(TIMSK,TIMSK_OCIE1A);
+	CLR_BIT(TIMSK,TIMSK_OCIE1B);
+	CLR_BIT(TIMSK,TIMSK_TOIE1);
+
+
+}
+
 /*******************Timer2********************/
 
 uint8 TIMER2_u8Init(const TIMER2_cfg_t  *Copy_suCfg){
@@ -370,12 +451,12 @@ uint8 TIMER2_u8Init(const TIMER2_cfg_t  *Copy_suCfg){
 		/* if Result is zero out form loop */
 		while (ASSR & ((1 << ASSR_TCN2UB) | (1 << ASSR_OCR2UB) | (1 << ASSR_TCR2UB)));
 
-	 /*  while((GET_BIT(ASSR,ASSR_TCN2UB) == 0) && (GET_BIT(ASSR,ASSR_OCR2UB) == 0) (GET_BIT(ASSR,ASSR_TCR2UB) == 0));*/
+		/*  while((GET_BIT(ASSR,ASSR_TCN2UB) == 0) && (GET_BIT(ASSR,ASSR_OCR2UB) == 0) (GET_BIT(ASSR,ASSR_TCR2UB) == 0));*/
 
 
 		/* Step 5: Clear Timer/Counter2 Interrupt Flags */
-        SET_BIT(TIFR, TIFR_OCF2);
-        SET_BIT(TIFR, TIFR_TOV2);
+		SET_BIT(TIFR, TIFR_OCF2);
+		SET_BIT(TIFR, TIFR_TOV2);
 
 
 		/* Step 6: Set Interrupt Mode*/
@@ -385,6 +466,8 @@ uint8 TIMER2_u8Init(const TIMER2_cfg_t  *Copy_suCfg){
 		case T2_INT_DISABLED:CLR_BIT(TIMSK, TIMSK_TOIE2); CLR_BIT(TIMSK, TIMSK_OCIE2);break;
 		default:Local_u8ErrState = NOK;
 		}
+
+
 
 	}else{
 		Local_u8ErrState = NULL_PTR_ERR;
@@ -432,6 +515,40 @@ uint8 TIMER2_u8SetCompareOutputMode(TIMER2_OUT_HW_Option Copy_u8OutputMode){
 }
 
 
+uint8  TIMER2_u8EnableInt(TIMER2_INT_State Copy_sIntOpt){
+	uint8 Local_u8ErrState = OK;
+
+	switch(Copy_sIntOpt){
+	case T2_INT_OVERFLOW:SET_BIT(TIMSK, TIMSK_TOIE2); break;
+	case T2_INT_COMPARE: SET_BIT(TIMSK, TIMSK_OCIE2); break;
+	default:Local_u8ErrState = NOK;
+	}
+
+	return Local_u8ErrState;
+
+}
+uint8  TIMER2_u8DisableInt(TIMER2_INT_State Copy_sIntOpt){
+	uint8 Local_u8ErrState = OK;
+
+	switch(Copy_sIntOpt){
+	case T2_INT_OVERFLOW:CLR_BIT(TIMSK, TIMSK_TOIE2); break;
+	case T2_INT_COMPARE: CLR_BIT(TIMSK, TIMSK_OCIE2); break;
+	case T2_INT_DISABLED:CLR_BIT(TIMSK, TIMSK_TOIE2); CLR_BIT(TIMSK, TIMSK_OCIE2);break;
+	default:Local_u8ErrState = NOK;
+	}
+	return Local_u8ErrState;
+
+}
+
+
+void  TIMER2_vStopTimer(){
+	TCCR2 &= MASK_LEAST_3_BIT;
+	TCCR2 |= TIMER2_NO_CLOCK;
+
+	/*Disable All interrupts */
+	CLR_BIT(TIMSK, TIMSK_TOIE2);
+	CLR_BIT(TIMSK, TIMSK_OCIE2);
+}
 
 
 
@@ -451,6 +568,8 @@ void __vector_11(void){
 
 	if(GlobalCallBackFucn[TIMER0_OV_INT] != NULL){
 		GlobalCallBackFucn[TIMER0_OV_INT]();
+	}else{
+
 	}
 
 }
@@ -464,6 +583,8 @@ void __vector_10(void){
 
 	if(GlobalCallBackFucn[TIMER0_OC_INT] != NULL){
 		GlobalCallBackFucn[TIMER0_OC_INT]();
+	}else{
+
 	}
 
 }
@@ -475,6 +596,8 @@ void __vector_9(void){
 
 	if(GlobalCallBackFucn[TIMER1_OV_INT] != NULL){
 		GlobalCallBackFucn[TIMER1_OV_INT]();
+	}else{
+
 	}
 }
 /*TIMER1 COMPB*/
@@ -483,6 +606,8 @@ void __vector_8(void){
 
 	if(GlobalCallBackFucn[TIMER1_OC1B_INT] != NULL){
 		GlobalCallBackFucn[TIMER1_OC1B_INT]();
+	}else{
+
 	}
 }
 
@@ -491,6 +616,8 @@ __attribute__((signal)) void __vector_7(void);
 void __vector_7(void){
 	if(GlobalCallBackFucn[TIMER1_OC1A_INT] != NULL){
 		GlobalCallBackFucn[TIMER1_OC1A_INT]();
+	}else{
+
 	}
 }
 
@@ -500,6 +627,8 @@ __attribute__((signal)) void __vector_6(void);
 void __vector_6(void){
 	if(GlobalCallBackFucn[TIMER1_ICU_INT] != NULL){
 		GlobalCallBackFucn[TIMER1_ICU_INT]();
+	}else{
+
 	}
 }
 
@@ -514,6 +643,8 @@ void __vector_5(void){
 
 	if(GlobalCallBackFucn[TIMER2_OV_INT] != NULL){
 		GlobalCallBackFucn[TIMER2_OV_INT]();
+	}else{
+
 	}
 
 }
