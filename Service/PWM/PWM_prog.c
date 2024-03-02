@@ -4,13 +4,12 @@
 #include "PWM_cfg.h"
 #include "PWM_prv.h"
 #include "TIMER_interface.h"
-#include "CLCD_interface.h"
 
 static uint32 *PWM_pu32Period = NULL;
 static uint32 *PWM_pu32OnTime = NULL;
 static uint16 PWM_OverflowCounter = 0;
 static void (*Schedule_vCallBackFunc)(void) = NULL;
-static sint8 Schedule_u8PeriodcorOnce  = 0;
+static Schedule_Iteration_t Schedule_enPeriodcOrOnce = ONCE;
 static uint32 Schedule_u32CountCompare  =0;
 
 uint8 PWM_u8Set(uint16 Copy_u16Period_ms,uint16 Copy_u16ONTime_ms){
@@ -61,6 +60,9 @@ uint8 PWM_u8Get(uint32 *Copy_pu32Period_us, uint32 *Copy_pu32ONTime_us){
 				.INT_State = T1_INT_ICU
 		};
 
+		*Copy_pu32Period_us = 0;
+		*Copy_pu32ONTime_us = 0;
+        uint16 Local_u16TimerOut = 0;
 
 		PWM_pu32Period = Copy_pu32Period_us;
 		PWM_pu32OnTime = Copy_pu32ONTime_us;
@@ -71,6 +73,10 @@ uint8 PWM_u8Get(uint32 *Copy_pu32Period_us, uint32 *Copy_pu32ONTime_us){
 		TIMER_u8SetCallBackFunc(TIMER1_ICU_INT,ICU_Helper);
 		TIMER_u8SetCallBackFunc(TIMER1_OV_INT,voidOverFlowCounter);
 
+		/*Pooling until return value*/
+		while((*PWM_pu32Period == 0) && (*PWM_pu32OnTime == 0) && Local_u16TimerOut< PWM_GET_PWM_TIMEOUT){
+			Local_u16TimerOut++;
+		}
 
 	}else{
 		Local_u8ErrState = NULL_PTR_ERR;
@@ -83,14 +89,14 @@ uint8 PWM_u8Get(uint32 *Copy_pu32Period_us, uint32 *Copy_pu32ONTime_us){
 
 
 
-uint8 Schedule_u8Ms(uint32 Copy_u32TimeMs, uint8 Copy_u8PeriodcorOnce,  void (*const Copy_vCallBackFunc)(void) ){
+uint8 Schedule_u8Ms(uint32 Copy_u32TimeMs, Schedule_Iteration_t Copy_enPeriodicOrOnce,  void (*const Copy_vCallBackFunc)(void) ){
 
 	uint8 Local_u8ErrState = OK;
 
 	if(Copy_vCallBackFunc != NULL){
 		TIMER0_cfg_t  Local_sTimer0_cfg = {
 				.WFG_Mode = T0_COMPARE_MATCH,
-				.Prescaler = TIMER_PRESCALER_DIVISION_256,
+				.Prescaler = TIMER_PRESCALER_DIVISION_64,
 				.Out_HW_Opt = T0_OC0_DISCONNECT,
 				.INT_State =  T0_INT_COMPARE,
 		};
@@ -100,9 +106,10 @@ uint8 Schedule_u8Ms(uint32 Copy_u32TimeMs, uint8 Copy_u8PeriodcorOnce,  void (*c
 		TIMER0_voidSetCompareValue(250);
 		Schedule_vCallBackFunc = Copy_vCallBackFunc;
 		TIMER_u8SetCallBackFunc(TIMER0_OC_INT,vSchedule);
-	    Schedule_u8PeriodcorOnce = Copy_u8PeriodcorOnce;
-		/* Tick time 16us  and compare val 250*/
-		Schedule_u32CountCompare = (Copy_u32TimeMs /4UL);
+		Schedule_enPeriodcOrOnce = Copy_enPeriodicOrOnce;
+	    /*Tick time 4us and Compare val = 250 so Compare time is 1ms so count of
+	      compare is count of millisecond*/
+		Schedule_u32CountCompare = Copy_u32TimeMs;
 	}else{
 		Local_u8ErrState = NULL_PTR_ERR;
 	}
@@ -153,17 +160,19 @@ static void vSchedule(){
 
 	static uint32 Counter = 0;
 
-	if(Schedule_u8PeriodcorOnce > 0){
 		Counter++;
 		if(Counter == Schedule_u32CountCompare){
 			Schedule_vCallBackFunc();
-			CLCD_u8SendNumber(Schedule_u8PeriodcorOnce);
-			Counter = 0;
-			Schedule_u8PeriodcorOnce--;
+			if(Schedule_enPeriodcOrOnce == PERIODIC){
+				Counter = 0;
+			}else if(Schedule_enPeriodcOrOnce == ONCE){
+				Counter = 0;
+				TIMER0_vStopTimer();
+			}
+
 		}
-	}else{
-		TIMER0_vStopTimer();
-	}
+
+
 }
 
 
