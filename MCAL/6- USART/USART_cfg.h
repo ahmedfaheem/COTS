@@ -1,0 +1,35 @@
+#ifndef USART_CFG_H
+#define USART_CFG_H
+
+
+/*
+ 1- EVEN
+ 2- ODD
+ 3- NO_PARITY
+ */
+#define USART_PARITY_OPT    NO_PARITY
+
+/*
+ * 1- ONE_BIT
+ * 2- TWO_BIT
+ */
+#define USART_STOP_BIT_OPT     ONE_BIT
+
+/*
+ * CHAR_5_BIT
+ * CHAR_6_BIT
+ * CHAR_7_BIT
+ * CHAR_8_BIT
+ * */
+#define USART_CHAR_SIZE     CHAR_8_BIT
+
+
+/* BAUD_2400
+ * BAUD_4800
+ * BAUD_9600
+ * BAUD_14400
+ * BAUD_19200
+ * */
+#define USART_BAUD_RATE   BAUD_9600
+
+#endif
